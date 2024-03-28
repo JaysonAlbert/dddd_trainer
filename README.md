@@ -137,14 +137,14 @@ System:
     Project: test                     # 项目名称 也就是{project_name}
     Val: 0.03                         # 验证集的数据量比例，0.03就是3%，在缓存数据时，会自动选则3%的图片用作训练过程中的数据验证，修改本值之后需要重新缓存数据
 Train:
-    BATCH_SIZE: 32                                    # 训练时每一个batch_size的大小，主要取决于你的显存或内存大小，可以根据自己的情况，多测试，一般为16的倍数,如16，32，64，128
+    BATCH_SIZE: 64                                    # 训练时每一个batch_size的大小，主要取决于你的显存或内存大小，可以根据自己的情况，多测试，一般为16的倍数,如16，32，64，128
     CNN: {NAME: ddddocr}                              # 特征提取的模型，目前支持的值为ddddocr,effnetv2_l,effnetv2_m,effnetv2_xl,effnetv2_s,mobilenetv2,mobilenetv3_s,mobilenetv3_l
     DROPOUT: 0.3                                      # 非专业人员不要动
     LR: 0.01                                          # 初始学习率
     OPTIMIZER: SGD                                    # 优化器，不要动
     SAVE_CHECKPOINTS_STEP: 2000                       # 每多少step保存一次模型
     TARGET: {Accuracy: 0.97, Cost: 0.05, Epoch: 20}   # 训练结束的目标，同时满足时自动结束训练并保存onnx模型，Accuracy为需要满足的最小准确率，Cost为需要满足的最小损失，Epoch为需要满足的最小训练轮数
-    TEST_BATCH_SIZE: 32                               # 测试时每一个batch_size的大小，主要取决于你的显存或内存大小，可以根据自己的情况，多测试，一般为16的倍数,如16，32，64，128
+    TEST_BATCH_SIZE: 64                               # 测试时每一个batch_size的大小，主要取决于你的显存或内存大小，可以根据自己的情况，多测试，一般为16的倍数,如16，32，64，128
     TEST_STEP: 1000                                   # 每多少step进行一次测试
 
 

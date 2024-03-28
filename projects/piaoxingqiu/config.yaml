@@ -1,0 +1,24 @@
+Model:
+    CharSet: [' ', '3', '2', +, '5', '=', x, '7', '1', '8', '6', '0', '4', '?', '-',
+        '9']
+    ImageChannel: 3
+    ImageHeight: 128
+    ImageWidth: -1
+    Word: false
+System:
+    Allow_Ext: [jpg, jpeg, png, bmp]
+    GPU: true
+    GPU_ID: 0
+    Path: /home/wangjie/PycharmProjects/dddd_trainer/projects/piaoxingqiu/datasets/images
+    Project: piaoxingqiu
+    Val: 0.1
+Train:
+    BATCH_SIZE: 32
+    CNN: {NAME: effnetv2_m, PRETRAINED: false}
+    DROPOUT: 0.3
+    LR: 0.005
+    OPTIMIZER: SGD
+    SAVE_CHECKPOINTS_STEP: 2000
+    TARGET: {Accuracy: 0.95, Cost: 0.05, Epoch: 20}
+    TEST_BATCH_SIZE: 32
+    TEST_STEP: 1000

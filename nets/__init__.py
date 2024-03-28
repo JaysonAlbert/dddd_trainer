@@ -2,6 +2,7 @@ import json
 
 from .backbone import *
 import torch
+import torchvision.models as models
 
 torch.set_num_threads(1)
 
@@ -9,6 +10,15 @@ import numpy as np
 
 np.random.seed(0)
 torch.manual_seed(0)
+
+def get_pretrained_model(model_name):
+    if model_name in models.__dict__:
+        # 获取模型构造函数
+        model_fn = models.__dict__[model_name]
+        # 加载预训练模型
+        return model_fn(pretrained=True)
+    else:
+        raise ValueError(f"Model {model_name} not found in torchvision.models")
 
 
 class Net(torch.nn.Module):
@@ -38,11 +48,15 @@ class Net(torch.nn.Module):
         self.charset = self.conf['Model']['CharSet']
         self.charset_len = len(self.charset)
         self.backbone = self.conf['Train']['CNN']['NAME']
+        self.pretrained = self.conf['Train']['CNN']['PRETRAINED']
         self.paramters = []
         self.word = self.conf['Model']['Word']
-        if self.backbone in self.backbones_list:
+        
+        if self.pretrained:
+            self.cnn = get_pretrained_model(self.backbone)
+        elif self.backbone in self.backbones_list:
             test_cnn = self.backbones_list[self.backbone](nc=1)
-            x = torch.randn(1, 1, self.resize[1], self.resize[1])
+            x = torch.randn(2, 1, self.resize[1], self.resize[1])
             test_features = test_cnn(x)
             del x
             del test_cnn

@@ -1,30 +1,36 @@
 import json
 import os
-import random
 import time
 
-import tqdm
 
 from configs import Config
 from loguru import logger
 from utils import load_cache
 from nets import Net
-
+from torch.utils.tensorboard.writer import SummaryWriter
+import datetime
+import os
 
 class Train:
     def __init__(self, project_name: str):
         self.project_name = project_name
         self.project_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "projects",
                                          project_name)
-        self.checkpoints_path = os.path.join(self.project_path, "checkpoints")
-        self.models_path = os.path.join(self.project_path, "models")
+        self.config = Config(project_name)
+        self.conf = self.config.load_config()
+        self.cnn_name = self.conf['Train']['CNN']['NAME']
+        self.channel = self.conf['Model']['ImageChannel']
+        self.checkpoints_path = os.path.join(self.project_path, f"checkpoints/{self.cnn_name}_{self.channel}")
+        self.models_path = os.path.join(self.project_path, f"models/{self.cnn_name}_{self.channel}")
+        self.log_path = os.path.join(self.project_path, f"logs/{self.cnn_name}_{self.channel}")
+        os.makedirs(self.checkpoints_path, exist_ok=True)
+        os.makedirs(self.models_path, exist_ok=True)
+        os.makedirs(self.log_path, exist_ok=True)
         self.epoch = 0
         self.step = 0
         self.lr = None
         self.state_dict = None
         self.optimizer = None
-        self.config = Config(project_name)
-        self.conf = self.config.load_config()
 
         self.test_step = self.conf['Train']['TEST_STEP']
         self.save_checkpoints_step = self.conf['Train']['SAVE_CHECKPOINTS_STEP']
@@ -85,6 +91,14 @@ class Train:
         self.val = loaders.loaders['val']
         del loaders
         logger.info("\nGet Data Loader End!")
+        
+        self.writer     = SummaryWriter(self.log_path)
+        try:
+            dummy_input     = self.net.get_random_tensor().to(self.device)
+            self.writer.add_graph(self.net, dummy_input)
+        except Exception as e:
+            logger.error("\nError: {}".format(str(e)))
+            pass
 
         self.loss = 0
         self.avg_loss = 0
@@ -109,6 +123,7 @@ class Train:
                         time.strftime("[%Y-%m-%d-%H_%M_%S]", time.localtime(self.now_time)), self.epoch, self.step,
                         str(loss), str(self.avg_loss / 100), lr
                     ))
+                    self.writer.add_scalar('Train loss', self.avg_loss / 100, self.step)
                     self.avg_loss = 0
                 if self.step % self.save_checkpoints_step == 0 and self.step != 0:
                     model_path = os.path.join(self.checkpoints_path, "checkpoint_{}_{}_{}.tar".format(
@@ -138,6 +153,9 @@ class Train:
                         time.strftime("[%Y-%m-%d-%H_%M_%S]", time.localtime(self.now_time)), self.epoch, self.step,
                         str(loss), str(self.avg_loss / 100), lr, accuracy
                     ))
+                    self.writer.add_scalar('Val loss', self.avg_loss / 100, self.step)
+                    self.writer.add_scalar('Val Acc', accuracy, self.step)
+
                     self.avg_loss = 0
                     if accuracy > self.target_acc and self.epoch > self.min_epoch and self.avg_loss < self.max_loss:
                         logger.info("\nTraining Finished!Exporting Model...")
@@ -145,7 +163,7 @@ class Train:
                         input_names = ["input1"]
                         output_names = ["output"]
 
-                        if self.net.backbone.startswith("effnet"):
+                        if self.net.backbone.startswith("effnet") and 'set_swich' in dir(self.net.cnn):
                             self.net.cnn.set_swish(memory_efficient=False)
                         self.net = self.net.eval().cpu()
                         dynamic_ax = {'input1': {3: 'image_wdith'}, "output": {1: 'seq'}}
