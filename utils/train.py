@@ -19,10 +19,11 @@ class Train:
         self.config = Config(project_name)
         self.conf = self.config.load_config()
         self.cnn_name = self.conf['Train']['CNN']['NAME']
+        self.ver = self.conf['Train']['VER']
         self.channel = self.conf['Model']['ImageChannel']
-        self.checkpoints_path = os.path.join(self.project_path, f"checkpoints/{self.cnn_name}_{self.channel}")
-        self.models_path = os.path.join(self.project_path, f"models/{self.cnn_name}_{self.channel}")
-        self.log_path = os.path.join(self.project_path, f"logs/{self.cnn_name}_{self.channel}")
+        self.checkpoints_path = os.path.join(self.project_path, f"checkpoints/{self.cnn_name}_{self.channel}_{self.ver}")
+        self.models_path = os.path.join(self.project_path, f"models/{self.cnn_name}_{self.channel}_{self.ver}")
+        self.log_path = os.path.join(self.project_path, f"logs/{self.cnn_name}_{self.channel}_{self.ver}")
         os.makedirs(self.checkpoints_path, exist_ok=True)
         os.makedirs(self.models_path, exist_ok=True)
         os.makedirs(self.log_path, exist_ok=True)
