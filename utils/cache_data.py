@@ -109,8 +109,12 @@ class CacheData:
         train_set = caches[val_num:]
         val_set = caches[:val_num]
         del caches
+        if not os.path.exists(self.cache_path):
+            os.mkdir(self.cache_path)
         with open(os.path.join(self.cache_path, "cache.train.tmp"), 'w', encoding="utf-8") as f:
             f.write("\n".join(train_set))
+        if not os.path.exists(self.cache_path):
+            os.mkdir(self.cache_path)
         with open(os.path.join(self.cache_path, "cache.val.tmp"), 'w', encoding="utf-8") as f:
             f.write("\n".join(val_set))
         logger.info("\nTrain Data Number is {}".format(len(train_set)))
