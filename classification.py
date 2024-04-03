@@ -30,6 +30,8 @@ def find_replaced_characters(a, b):
 
 
 def validate(path):
+    base_path = os.path.dirname(path)
+    image_path = os.path.join(base_path, "images")
     with open(path, "r") as f:
         correct_count = 0
         total_count = 0
@@ -40,14 +42,15 @@ def validate(path):
         for line in f:
             image, label = line.split("\t")
             total_count = total_count + 1
-            with open(f"./projects/piaoxingqiu/datasets/images/{image}", "rb") as a:
+            image_name = os.path.join(image_path, image)
+            with open( image_name, "rb") as a:
                 image_bytes = a.read()
                 pred = det.classification(image_bytes)
                 if pred == label.strip():
                     correct_count = correct_count + 1
                 else:
                     shutil.copy(
-                        f"./projects/piaoxingqiu/datasets/images/{image}",
+                        image_name,
                         f"./eval/{image}",
                     )
                     print(
@@ -77,4 +80,4 @@ def eval():
 
 
 if __name__ == "__main__":
-    validate("./projects/piaoxingqiu/datasets/labels_val.txt")
+    validate("./projects/piaoxingqiu/datasets_o/labels_val.txt")
