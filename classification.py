@@ -5,8 +5,8 @@ import time
 
 det = ddddocr.DdddOcr(
     show_ad=False,
-    import_onnx_path="./projects/piaoxingqiu/models/efficientnet_v2_s_3_v4500_32_d05_lr01_pretrained_v1(del)/piaoxingqiu_0.984375_7_1000_2024-04-03-15-44-14.onnx",
-    charsets_path="./projects/piaoxingqiu/models/efficientnet_v2_s_3_v4500_32_d05_lr01_pretrained_v1(del)/charsets.json",
+    import_onnx_path="./projects/piaoxingqiu/models/efficientnet_v2_s_3_v4500_32_d05_lr01_pretrained_v1_red/piaoxingqiu_1.0_11_1500_2024-04-03-16-56-18.onnx",
+    charsets_path="./projects/piaoxingqiu/models/efficientnet_v2_s_3_v4500_32_d05_lr01_pretrained_v1_red/charsets.json",
 )
 
 

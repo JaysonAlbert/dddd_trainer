@@ -1,38 +1,49 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: train",
-            "type": "python",
-            "request": "launch",
-            "program": "app.py",
-            "args": ["train", "piaoxingqiu"],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Python: cache",
-            "type": "python",
-            "request": "launch",
-            "program": "app.py",
-            "args": ["cache", 
-            "piaoxingqiu",
-            "/home/wangjie/PycharmProjects/dddd_trainer/projects/piaoxingqiu/datasets",
-            "file"
-        ],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Python: classification",
-            "type": "python",
-            "request": "launch",
-            "program": "classification.py",
-            "console": "integratedTerminal",
-            "justMyCode": false
-        },
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "python.formatting.provider": "black",
+  "configurations": [
+    {
+      "name": "Python: train",
+      "type": "python",
+      "request": "launch",
+      "program": "app.py",
+      "args": ["train", "piaoxingqiu"],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Python: log",
+      "type": "python",
+      "request": "launch",
+      "program": "app.py",
+      "args": ["log", "piaoxingqiu"],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Python: cache",
+      "type": "python",
+      "request": "launch",
+      "program": "app.py",
+      "args": [
+        "cache",
+        "piaoxingqiu",
+        "/home/wangjie/PycharmProjects/dddd_trainer/projects/piaoxingqiu/datasets",
+        "file"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Python: classification",
+      "type": "python",
+      "request": "launch",
+      "program": "classification.py",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
 }

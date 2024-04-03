@@ -11,19 +11,32 @@ from torch.utils.tensorboard.writer import SummaryWriter
 import datetime
 import os
 
+
 class Train:
     def __init__(self, project_name: str):
         self.project_name = project_name
-        self.project_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "projects",
-                                         project_name)
+        self.project_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "projects",
+            project_name,
+        )
         self.config = Config(project_name)
         self.conf = self.config.load_config()
-        self.cnn_name = self.conf['Train']['CNN']['NAME']
-        self.ver = self.conf['Train']['VER']
-        self.channel = self.conf['Model']['ImageChannel']
-        self.checkpoints_path = os.path.join(self.project_path, f"checkpoints/{self.cnn_name}_{self.channel}_{self.ver}")
-        self.models_path = os.path.join(self.project_path, f"models/{self.cnn_name}_{self.channel}_{self.ver}")
-        self.log_path = os.path.join(self.project_path, f"logs/{self.cnn_name}_{self.channel}_{self.ver}")
+        self.cnn_name = self.conf["Train"]["CNN"]["NAME"]
+        self.ver = self.conf["Train"]["VER"]
+        self.channel = self.conf["Model"]["ImageChannel"]
+        self.checkpoints_path = os.path.join(
+            self.project_path, f"checkpoints/{self.cnn_name}_{self.channel}_{self.ver}"
+        )
+        self.models_path = os.path.join(
+            self.project_path, f"models/{self.cnn_name}_{self.channel}_{self.ver}"
+        )
+        self.log_path = os.path.join(
+            self.project_path, f"logs/{self.cnn_name}_{self.channel}_{self.ver}"
+        )
+        self.graph_path = os.path.join(
+            self.project_path, f"graphs/{self.cnn_name}_{self.channel}_{self.ver}.txt"
+        )
         os.makedirs(self.checkpoints_path, exist_ok=True)
         os.makedirs(self.models_path, exist_ok=True)
         os.makedirs(self.log_path, exist_ok=True)
@@ -33,22 +46,28 @@ class Train:
         self.state_dict = None
         self.optimizer = None
 
-        self.test_step = self.conf['Train']['TEST_STEP']
-        self.save_checkpoints_step = self.conf['Train']['SAVE_CHECKPOINTS_STEP']
+        self.test_step = self.conf["Train"]["TEST_STEP"]
+        self.save_checkpoints_step = self.conf["Train"]["SAVE_CHECKPOINTS_STEP"]
 
-        self.target = self.conf['Train']['TARGET']
-        self.target_acc = self.target['Accuracy']
-        self.min_epoch = self.target['Epoch']
-        self.max_loss = self.target['Cost']
+        self.target = self.conf["Train"]["TARGET"]
+        self.target_acc = self.target["Accuracy"]
+        self.min_epoch = self.target["Epoch"]
+        self.max_loss = self.target["Cost"]
 
-        self.resize = [int(self.conf['Model']['ImageWidth']), int(self.conf['Model']['ImageHeight'])]
-        self.word = self.conf['Model']['Word']
-        self.ImageChannel = self.conf['Model']['ImageChannel']
-        logger.info("\nTaget:\nmin_Accuracy: {}\nmin_Epoch: {}\nmax_Loss: {}".format(self.target_acc, self.min_epoch,
-                                                                                     self.max_loss))
-        self.use_gpu = self.conf['System']['GPU']
+        self.resize = [
+            int(self.conf["Model"]["ImageWidth"]),
+            int(self.conf["Model"]["ImageHeight"]),
+        ]
+        self.word = self.conf["Model"]["Word"]
+        self.ImageChannel = self.conf["Model"]["ImageChannel"]
+        logger.info(
+            "\nTaget:\nmin_Accuracy: {}\nmin_Epoch: {}\nmax_Loss: {}".format(
+                self.target_acc, self.min_epoch, self.max_loss
+            )
+        )
+        self.use_gpu = self.conf["System"]["GPU"]
         if self.use_gpu:
-            self.gpu_id = self.conf['System']['GPU_ID']
+            self.gpu_id = self.conf["System"]["GPU_ID"]
             logger.info("\nUSE GPU ----> {}".format(self.gpu_id))
             self.device = Net.get_device(self.gpu_id)
 
@@ -66,9 +85,10 @@ class Train:
                 if int(checkpoint_name[3]) > history_step:
                     newer_checkpoint = checkpoint
                     history_step = int(checkpoint_name[3])
-            param, self.state_dict, self.optimizer= Net.load_checkpoint(
-                os.path.join(self.checkpoints_path, newer_checkpoint), self.device)
-            self.epoch, self.step, self.lr = param['epoch'], param['step'], param['lr']
+            param, self.state_dict, self.optimizer = Net.load_checkpoint(
+                os.path.join(self.checkpoints_path, newer_checkpoint), self.device
+            )
+            self.epoch, self.step, self.lr = param["epoch"], param["step"], param["lr"]
             self.epoch += 1
             self.step += 1
 
@@ -80,22 +100,24 @@ class Train:
         if self.state_dict:
             self.net.load_state_dict(self.state_dict)
         logger.info(self.net)
+
+        with open(self.graph_path, "w") as f:
+            f.writelines(str(self.net))
+
         logger.info("\nBuilding End")
-
-
 
         self.net = self.net.to(self.device)
         logger.info("\nGet Data Loader...")
 
         loaders = load_cache.GetLoader(project_name)
-        self.train = loaders.loaders['train']
-        self.val = loaders.loaders['val']
+        self.train = loaders.loaders["train"]
+        self.val = loaders.loaders["val"]
         del loaders
         logger.info("\nGet Data Loader End!")
-        
-        self.writer     = SummaryWriter(self.log_path)
+
+        self.writer = SummaryWriter(self.log_path)
         try:
-            dummy_input     = self.net.get_random_tensor().to(self.device)
+            dummy_input = self.net.get_random_tensor().to(self.device)
             self.writer.add_graph(self.net, dummy_input)
         except Exception as e:
             logger.error("\nError: {}".format(str(e)))
@@ -120,20 +142,40 @@ class Train:
                 self.step += 1
 
                 if self.step % 100 == 0 and self.step % self.test_step != 0:
-                    logger.info("{}\tEpoch: {}\tStep: {}\tLastLoss: {}\tAvgLoss: {}\tLr: {}".format(
-                        time.strftime("[%Y-%m-%d-%H_%M_%S]", time.localtime(self.now_time)), self.epoch, self.step,
-                        str(loss), str(self.avg_loss / 100), lr
-                    ))
-                    self.writer.add_scalar('Train loss', self.avg_loss / 100, self.step)
+                    logger.info(
+                        "{}\tEpoch: {}\tStep: {}\tLastLoss: {}\tAvgLoss: {}\tLr: {}".format(
+                            time.strftime(
+                                "[%Y-%m-%d-%H_%M_%S]", time.localtime(self.now_time)
+                            ),
+                            self.epoch,
+                            self.step,
+                            str(loss),
+                            str(self.avg_loss / 100),
+                            lr,
+                        )
+                    )
+                    self.writer.add_scalar("Train loss", self.avg_loss / 100, self.step)
                     self.avg_loss = 0
                 if self.step % self.save_checkpoints_step == 0 and self.step != 0:
-                    model_path = os.path.join(self.checkpoints_path, "checkpoint_{}_{}_{}.tar".format(
-                        self.project_name, self.epoch, self.step,
-                    ))
+                    model_path = os.path.join(
+                        self.checkpoints_path,
+                        "checkpoint_{}_{}_{}.tar".format(
+                            self.project_name,
+                            self.epoch,
+                            self.step,
+                        ),
+                    )
                     self.net.scheduler.step()
-                    self.net.save_model(model_path,
-                                        {"net": self.net.state_dict(), "optimizer": self.net.optimizer.state_dict(),
-                                         "epoch": self.epoch, "step": self.step, "lr": lr})
+                    self.net.save_model(
+                        model_path,
+                        {
+                            "net": self.net.state_dict(),
+                            "optimizer": self.net.optimizer.state_dict(),
+                            "epoch": self.epoch,
+                            "step": self.step,
+                            "lr": lr,
+                        },
+                    )
 
                 if self.step % self.test_step == 0:
                     try:
@@ -146,41 +188,92 @@ class Train:
                         continue
                     test_inputs = self.net.variable_to_device(test_inputs, self.device)
                     self.net = self.net.train(False)
-                    pred_labels, labels_list, correct_list, error_list = self.net.tester(test_inputs, test_labels,
-                                                                                         test_labels_length)
+                    pred_labels, labels_list, correct_list, error_list = (
+                        self.net.tester(test_inputs, test_labels, test_labels_length)
+                    )
                     self.net = self.net.train()
                     accuracy = len(correct_list) / test_inputs.shape[0]
-                    logger.info("{}\tEpoch: {}\tStep: {}\tLastLoss: {}\tAvgLoss: {}\tLr: {}\tAcc: {}".format(
-                        time.strftime("[%Y-%m-%d-%H_%M_%S]", time.localtime(self.now_time)), self.epoch, self.step,
-                        str(loss), str(self.avg_loss / 100), lr, accuracy
-                    ))
-                    self.writer.add_scalar('Val loss', self.avg_loss / 100, self.step)
-                    self.writer.add_scalar('Val Acc', accuracy, self.step)
+                    logger.info(
+                        "{}\tEpoch: {}\tStep: {}\tLastLoss: {}\tAvgLoss: {}\tLr: {}\tAcc: {}".format(
+                            time.strftime(
+                                "[%Y-%m-%d-%H_%M_%S]", time.localtime(self.now_time)
+                            ),
+                            self.epoch,
+                            self.step,
+                            str(loss),
+                            str(self.avg_loss / 100),
+                            lr,
+                            accuracy,
+                        )
+                    )
+                    self.writer.add_scalar("Val loss", self.avg_loss / 100, self.step)
+                    self.writer.add_scalar("Val Acc", accuracy, self.step)
 
                     self.avg_loss = 0
-                    if accuracy > self.target_acc and self.epoch > self.min_epoch and self.avg_loss < self.max_loss:
+                    if (
+                        accuracy > self.target_acc
+                        and self.epoch > self.min_epoch
+                        and self.avg_loss < self.max_loss
+                    ):
                         logger.info("\nTraining Finished!Exporting Model...")
                         dummy_input = self.net.get_random_tensor()
                         input_names = ["input1"]
                         output_names = ["output"]
 
-                        if self.net.backbone.startswith("effnet") and 'set_swich' in dir(self.net.cnn):
+                        if self.net.backbone.startswith(
+                            "effnet"
+                        ) and "set_swich" in dir(self.net.cnn):
                             self.net.cnn.set_swish(memory_efficient=False)
                         self.net = self.net.eval().cpu()
-                        dynamic_ax = {'input1': {3: 'image_wdith'}, "output": {1: 'seq'}}
-                        self.net.export_onnx(self.net, dummy_input,
-                                             os.path.join(self.models_path, "{}_{}_{}_{}_{}.onnx".format(
-                                                 self.project_name, str(accuracy), self.epoch, self.step,
-                                                 time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(self.now_time))))
-                                             , input_names, output_names, dynamic_ax)
-                        with open(os.path.join(self.models_path, "charsets.json"), 'w', encoding="utf-8") as f:
-                            f.write(json.dumps({"charset": self.net.charset, "image": self.resize, "word": self.word, 'channel': self.ImageChannel}, ensure_ascii=False))
-                        logger.info("\nExport Finished!Using Time: {}min".format(
-                            str(int(int(self.now_time) - int(self.start_time)) / 60)))
+                        dynamic_ax = {
+                            "input1": {3: "image_wdith"},
+                            "output": {1: "seq"},
+                        }
+                        self.net.export_onnx(
+                            self.net,
+                            dummy_input,
+                            os.path.join(
+                                self.models_path,
+                                "{}_{}_{}_{}_{}.onnx".format(
+                                    self.project_name,
+                                    str(accuracy),
+                                    self.epoch,
+                                    self.step,
+                                    time.strftime(
+                                        "%Y-%m-%d-%H-%M-%S",
+                                        time.localtime(self.now_time),
+                                    ),
+                                ),
+                            ),
+                            input_names,
+                            output_names,
+                            dynamic_ax,
+                        )
+                        with open(
+                            os.path.join(self.models_path, "charsets.json"),
+                            "w",
+                            encoding="utf-8",
+                        ) as f:
+                            f.write(
+                                json.dumps(
+                                    {
+                                        "charset": self.net.charset,
+                                        "image": self.resize,
+                                        "word": self.word,
+                                        "channel": self.ImageChannel,
+                                    },
+                                    ensure_ascii=False,
+                                )
+                            )
+                        logger.info(
+                            "\nExport Finished!Using Time: {}min".format(
+                                str(int(int(self.now_time) - int(self.start_time)) / 60)
+                            )
+                        )
                         exit()
 
             self.epoch += 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     Train("test1")

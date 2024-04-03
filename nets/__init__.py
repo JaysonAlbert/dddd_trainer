@@ -3,6 +3,7 @@ import json
 from .backbone import *
 import torch
 import torchvision.models as models
+from torch import nn
 
 torch.set_num_threads(1)
 
@@ -75,7 +76,11 @@ class Net(torch.nn.Module):
             else:
                 self.out_size = test_features.size()[1] * test_features.size()[2]
 
+            self.reduction_layer = nn.Linear(self.out_size, 1024)
+            self.out_size = 1024
+
         elif self.backbone in self.backbones_list:
+            self.reduction_layer = None
             test_cnn = self.backbones_list[self.backbone](nc=1)
             x = torch.randn(2, 1, self.resize[1], self.resize[1])
             test_features = test_cnn(x)
@@ -160,6 +165,8 @@ class Net(torch.nn.Module):
             outputs = outputs.permute(3, 0, 1, 2)
             w, b, c, h = outputs.shape
             outputs = outputs.view(w, b, c * h)
+            if self.reduction_layer:
+                outputs = self.reduction_layer(outputs)
             outputs, _ = self.lstm(outputs)
             time_step, batch_size, h = outputs.shape
             outputs = outputs.view(time_step * batch_size, h)
@@ -167,6 +174,8 @@ class Net(torch.nn.Module):
             outputs = outputs.view(time_step, batch_size, -1)
         else:
             outputs = outputs.view(outputs.size(0), -1)
+            if self.reduction_layer:
+                outputs = self.reduction_layer(outputs)  # 应用降维层来降维
             outputs = self.fc(outputs)
         return outputs
 

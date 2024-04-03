@@ -18,8 +18,8 @@ Train:
     DROPOUT: 0.5
     LR: 0.01
     OPTIMIZER: SGD
-    SAVE_CHECKPOINTS_STEP: 200
-    TARGET: {Accuracy: 0.98, Cost: 0.05, Epoch: 10}
+    SAVE_CHECKPOINTS_STEP: 2000
+    TARGET: {Accuracy: 0.98, Cost: 0.05, Epoch: 5}
     TEST_BATCH_SIZE: 64
     TEST_STEP: 500
-    VER: v4500_32_d05_lr01_pretrained_v1_red
+    VER: v4500_32_d05_lr01_pretrained_v1(del)
