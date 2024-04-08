@@ -134,3 +134,6 @@ logs*/
 models*/
 *.png 
 *.jpeg
+datasets*
+graphs
+files.txt

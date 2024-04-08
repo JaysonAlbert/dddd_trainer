@@ -5,8 +5,8 @@ import time
 
 det = ddddocr.DdddOcr(
     show_ad=False,
-    import_onnx_path="./projects/piaoxingqiu/models/efficientnet_v2_s_3_v4500_32_d05_lr01_pretrained_v1_red/piaoxingqiu_1.0_11_1500_2024-04-03-16-56-18.onnx",
-    charsets_path="./projects/piaoxingqiu/models/efficientnet_v2_s_3_v4500_32_d05_lr01_pretrained_v1_red/charsets.json",
+    import_onnx_path="./projects/piaoxingqiu/models/efficientnet_v2_s_3_v1000_32_d05_lr01_pretrained_zh_cn/piaoxingqiu_0.984375_53_1500_2024-04-08-10-13-35.onnx",
+    charsets_path="./projects/piaoxingqiu/models/efficientnet_v2_s_3_v1000_32_d05_lr01_pretrained_zh_cn/charsets.json",
 )
 
 
@@ -29,7 +29,7 @@ def find_replaced_characters(a, b):
     return replaced_characters
 
 
-def validate(path):
+def validate(path, copy=False):
     base_path = os.path.dirname(path)
     image_path = os.path.join(base_path, "images")
     with open(path, "r") as f:
@@ -49,16 +49,20 @@ def validate(path):
                 if pred == label.strip():
                     correct_count = correct_count + 1
                 else:
-                    shutil.copy(
-                        image_name,
-                        f"./eval/{image}",
-                    )
-                    print(
-                        image,
-                        pred,
-                        label.strip(),
-                        find_replaced_characters(pred, label.strip()),
-                    )
+                    if copy:
+                        shutil.copy(
+                            image_name,
+                            f"./eval/{image}",
+                        )
+                    try:
+                        print(
+                            image,
+                            pred,
+                            label.strip(),
+                            find_replaced_characters(pred, label.strip()),
+                        )
+                    except:
+                        print(image, pred, label.strip())
 
         print(
             f"总测试量：{total_count}，正确：{correct_count}，错误：{total_count - correct_count} , 正确率：{correct_count / total_count}, 共花了{time.time() - start_time}s"
@@ -80,4 +84,6 @@ def eval():
 
 
 if __name__ == "__main__":
-    validate("./projects/piaoxingqiu/datasets_o/labels_val.txt")
+    validate("./projects/piaoxingqiu/datasets_zh/labels_val.txt")
+    validate("./projects/piaoxingqiu/datasets_p/labels_val.txt")
+    validate("./projects/piaoxingqiu/datasets_p_zh/labels.txt")
