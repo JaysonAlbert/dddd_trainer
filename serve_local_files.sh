@@ -20,7 +20,7 @@ fi
 
 echo "Replacing ${INPUT_DIR} to http://localhost:${PORT} ..."
 INPUT_DIR_ESCAPED=$(printf '%s\n' "$INPUT_DIR" | sed -e 's/[\/&]/\\&/g')
-eval $FIND_CMD | sed "/${INPUT_DIR_ESCAPED}/s//http:\/\/localhost:${PORT}/" > $OUTPUT_FILE
+eval $FIND_CMD | sed "/${INPUT_DIR_ESCAPED}/s//http:\/\/localhost:${PORT}\//" > $OUTPUT_FILE
 
 green=`tput setaf 2`
 reset=`tput sgr0`
@@ -28,4 +28,20 @@ echo "${green}File list stored in '${OUTPUT_FILE}'. Now import it directly from 
 
 echo "Running web server on the port ${PORT}"
 cd "$INPUT_DIR"
-python3 -m http.server $PORT
+
+cat <<EOF > cors_http_server.py
+import http.server
+import socketserver
+
+class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        super().end_headers()
+
+handler = CORSHTTPRequestHandler
+with socketserver.TCPServer(("", $PORT), handler) as httpd:
+    print("serving at port", $PORT)
+    httpd.serve_forever()
+EOF
+
+python3 cors_http_server.py
