@@ -79,7 +79,7 @@ def merge_datasets(
 if __name__ == "__main__":
     num_sample_to_merge = 1000
 
-    source_labels_path = "./projects/piaoxingqiu/datasets_o/labels.txt"
+    source_labels_path = "./projects/piaoxingqiu/datasets_p/labels.txt"
     target_labels_path = "./projects/piaoxingqiu/datasets/labels.txt"
     dry_run = len(sys.argv) > 1 and sys.argv[1] == "dry_run"
 

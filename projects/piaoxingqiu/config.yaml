@@ -1,6 +1,6 @@
 Model:
-    CharSet: [' ', '0', '-', '7', '?', '3', '5', '4', '=', +, '8', x, '2', '9', '6',
-        '1']
+    CharSet: [' ', 壹, 玖, '1', '9', 捌, '-', '8', '5', 零, 伍, +, '4', 柒, '2', '0', 加,
+        '7', 减, 陆, '6', '=', x, 贰, 肆, '?', 叁, '3', 乘]
     ImageChannel: 3
     ImageHeight: 128
     ImageWidth: -1
@@ -20,6 +20,6 @@ Train:
     OPTIMIZER: SGD
     SAVE_CHECKPOINTS_STEP: 200
     TARGET: {Accuracy: 0.98, Cost: 0.05, Epoch: 10}
-    TEST_BATCH_SIZE: 64
-    TEST_STEP: 500
-    VER: v4500_32_d05_lr01_pretrained_v1_red
+    TEST_BATCH_SIZE: 128
+    TEST_STEP: 100
+    VER: v2009_32_d05_lr01_pretrained_merge

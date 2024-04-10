@@ -83,9 +83,7 @@ if __name__ == "__main__":
         export_to_studio(input_file, output_file)
     else:
         print("Importing from Studio...")
-        import_path = (
-            "/home/wangjie/Downloads/project-1-at-2024-04-10-06-53-4e9ffbb7.csv"
-        )
+        import_path = "/home/wangjie/Downloads/project-1-at-2024-04-10-06-53-4e9ffbb7.csv"
         output_file = "./projects/piaoxingqiu/datasets/studio_labels.txt"
         import_from_studio(import_path, output_file)
     
